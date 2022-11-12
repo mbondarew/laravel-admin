@@ -46,7 +46,7 @@ class ImageController extends AdminController
         $form->image('image3')->flip('v');
         $form->image('image4')->move(null, 'renamed.jpeg');
         $form->image('image5')->name(function ($file) {
-            return 'asdasdasdasdasd.'.$file->guessExtension();
+            return 'asdasdasdasdasd.'.str_replace('jpg', 'jpeg', $file->guessExtension());
         });
         $form->image('image6')->uniqueName();
 
