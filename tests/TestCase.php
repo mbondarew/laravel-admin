@@ -28,6 +28,10 @@ class TestCase extends BaseTestCase
 
         $app->register('Encore\Admin\AdminServiceProvider');
 
+        if (version_compare($app->version(), '8.0.0', '>=')) {
+            $app->register('Illuminate\Database\Eloquent\LegacyFactoryServiceProvider');
+        }
+
         return $app;
     }
 
