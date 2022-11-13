@@ -1,0 +1,59 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - master
+      - 'master_*'
+      - '*.*'
+
+env:
+  DB_NAME: laravel_admin_test
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [ 7.4, 8.0 ]
+
+    name: PHP ${{ matrix.php }}
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: ${{ env.DB_NAME }}
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+          options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        ports:
+          - 3306:3306
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl mbstring mysql gd
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Install legacy factories for Laravel >=8
+        run: |
+          if [[ "$(composer show laravel/laravel | grep versions)" =~ v[891] ]]; then
+             composer require laravel/legacy-factories
+          fi
+
+      - name: Run tests
+        run: composer test
+        env:
+          MYSQL_HOST: 127.0.0.1
